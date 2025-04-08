@@ -59,10 +59,10 @@ export class ViewContract implements INodeType {
 				placeholder: 'get_value_by_key',
 			},
 			{
-				displayName: 'Arguments',
+				displayName: 'Arguments JSON',
 				name: 'methodArgs',
-				type: 'json',
-				default: {},
+				type: 'string',
+				default: '{}',
 				placeholder: '{"key": "value"}',
 			},
 		],
