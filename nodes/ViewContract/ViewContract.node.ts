@@ -27,7 +27,7 @@ export class ViewContract implements INodeType {
 		displayName: 'View Contract',
 		name: 'viewContract',
 		group: ['transform'],
-		version: 2,
+		version: [1, 2],
 		description: 'Sends a view contract request to NEAR Protocol',
 		defaults: {
 			name: 'View Contract',
