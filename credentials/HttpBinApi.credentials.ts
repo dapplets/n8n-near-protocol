@@ -8,7 +8,7 @@ import {
 export class HttpBinApi implements ICredentialType {
 	name = 'httpbinApi';
 	displayName = 'HttpBin API';
-	documentationUrl = '<your-docs-url>';
+	documentationUrl = 'https://github.com/dapplets/n8n-near-protocol';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Token',
