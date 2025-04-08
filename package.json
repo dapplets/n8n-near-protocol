@@ -1,6 +1,6 @@
 {
   "name": "@dapplets/n8n-nodes-near-protocol",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "NEAR Protocol community node package for n8n",
   "keywords": [
     "n8n-community-node-package"
@@ -42,7 +42,7 @@
     "nodes": [
       "dist/nodes/ExampleNode/ExampleNode.node.js",
       "dist/nodes/HttpBin/HttpBin.node.js",
-      "dist/nodes/ViewContract/ViewContract.node.js"
+      "dist/nodes/ViewContractCall/ViewContractCall.node.js"
     ]
   },
   "devDependencies": {

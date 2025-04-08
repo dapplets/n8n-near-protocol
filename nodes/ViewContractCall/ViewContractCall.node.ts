@@ -22,15 +22,15 @@ const Networks = {
 	},
 };
 
-export class ViewContract implements INodeType {
+export class ViewContractCall implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'View Contract',
-		name: 'viewContract',
+		displayName: 'View Contract Call',
+		name: 'viewContractCall',
 		group: ['transform'],
-		version: [1, 2],
+		version: 1,
 		description: 'Sends a view contract request to NEAR Protocol',
 		defaults: {
-			name: 'View Contract',
+			name: 'View Contract Call',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
