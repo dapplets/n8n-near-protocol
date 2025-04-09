@@ -54,6 +54,13 @@ export class WriteContractCall implements INodeType {
 				placeholder: 'ed25519:deadbeef',
 			},
 			{
+				displayName: 'Signer Account ID',
+				name: 'accountId',
+				type: 'string',
+				default: '',
+				placeholder: 'example.near',
+			},
+			{
 				displayName: 'Contract Account ID',
 				name: 'contractId',
 				type: 'string',
