@@ -5,7 +5,9 @@ import type {
 	INodeTypeDescription,
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { Contract, connect } from 'near-api-js';
+import { Contract, KeyPair, connect } from 'near-api-js';
+import { InMemoryKeyStore } from 'near-api-js/lib/key_stores';
+import { KeyPairString } from 'near-api-js/lib/utils';
 
 const Networks = {
 	testnet: {
@@ -22,15 +24,15 @@ const Networks = {
 	},
 };
 
-export class ViewContractCall implements INodeType {
+export class WriteContractCall implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'View Contract Call',
-		name: 'viewContractCall',
+		displayName: 'Write Contract Call',
+		name: 'writeContractCall',
 		group: ['transform'],
 		version: 1,
-		description: 'Sends a view contract request to NEAR Protocol',
+		description: 'Sends a write contract request to NEAR Protocol',
 		defaults: {
-			name: 'View Contract Call',
+			name: 'Write Contract Call',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -45,6 +47,13 @@ export class ViewContractCall implements INodeType {
 				placeholder: 'mainnet',
 			},
 			{
+				displayName: 'Private Key',
+				name: 'privateKey',
+				type: 'string',
+				default: '',
+				placeholder: 'ed25519:deadbeef',
+			},
+			{
 				displayName: 'Contract Account ID',
 				name: 'contractId',
 				type: 'string',
@@ -56,7 +65,7 @@ export class ViewContractCall implements INodeType {
 				name: 'methodName',
 				type: 'string',
 				default: '',
-				placeholder: 'get_value_by_key',
+				placeholder: 'set_value_by_key',
 			},
 			{
 				displayName: 'Arguments JSON',
@@ -77,6 +86,8 @@ export class ViewContractCall implements INodeType {
 
 		let item: INodeExecutionData;
 		let networkId: string;
+		let privateKey: string;
+		let accountId: string;
 		let contractId: string;
 		let methodName: string;
 		let methodArgs: any;
@@ -87,16 +98,24 @@ export class ViewContractCall implements INodeType {
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 			try {
 				networkId = this.getNodeParameter('networkId', itemIndex, '') as string;
+				privateKey = this.getNodeParameter('privateKey', itemIndex, '') as string;
+				accountId = this.getNodeParameter('accountId', itemIndex, '') as string;
 				contractId = this.getNodeParameter('contractId', itemIndex, '') as string;
 				methodName = this.getNodeParameter('methodName', itemIndex, '') as string;
-				methodArgs = JSON.parse(this.getNodeParameter('methodArgs', itemIndex, '') as string) as any;
+				methodArgs = JSON.parse(
+					this.getNodeParameter('methodArgs', itemIndex, '') as string,
+				) as any;
 
 				item = items[itemIndex];
 
-				const near = await connect(Networks[networkId as keyof typeof Networks]);
-				const contract = new Contract(near.connection, contractId, {
-					viewMethods: [methodName],
-					changeMethods: [],
+				const keyPair = KeyPair.fromString(privateKey as KeyPairString);
+				const keyStore = new InMemoryKeyStore();
+				keyStore.setKey(networkId, accountId, keyPair);
+				const near = await connect({ ...Networks[networkId as keyof typeof Networks], keyStore });
+				const account = await near.account(accountId);
+				const contract = new Contract(account, contractId, {
+					viewMethods: [],
+					changeMethods: [methodName],
 					useLocalViewExecution: false,
 				});
 
