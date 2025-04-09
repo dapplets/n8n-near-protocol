@@ -5,7 +5,7 @@ import type {
 	INodeTypeDescription,
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { Contract, KeyPair, connect } from 'near-api-js';
+import { KeyPair, connect } from 'near-api-js';
 import { InMemoryKeyStore } from 'near-api-js/lib/key_stores';
 import { KeyPairString } from 'near-api-js/lib/utils';
 
@@ -117,17 +117,18 @@ export class WriteContractCall implements INodeType {
 
 				const keyPair = KeyPair.fromString(privateKey as KeyPairString);
 				const keyStore = new InMemoryKeyStore();
-				keyStore.setKey(networkId, accountId, keyPair);
-				const near = await connect({ ...Networks[networkId as keyof typeof Networks], keyStore });
-				const account = await near.account(accountId);
-				const contract = new Contract(account, contractId, {
-					viewMethods: [],
-					changeMethods: [methodName],
-					useLocalViewExecution: false,
+				await keyStore.setKey(networkId, accountId, keyPair);
+				const near = await connect({
+					...Networks[networkId as keyof typeof Networks],
+					keyStore,
+					deps: { keyStore },
 				});
-
-				// @ts-ignore
-				const result = await contract[methodName](methodArgs);
+				const account = await near.account(accountId);
+				const result = await account.functionCall({
+					contractId,
+					methodName,
+					args: methodArgs,
+				})
 
 				item.json.result = result;
 			} catch (error) {
