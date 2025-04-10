@@ -5,8 +5,9 @@ import type {
 	INodeTypeDescription,
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { KeyPair, utils } from 'near-api-js';
+import { KeyPair } from 'near-api-js';
 import { KeyPairString } from 'near-api-js/lib/utils';
+import { Base64 } from 'js-base64';
 
 export class SignMessage implements INodeType {
 	description: INodeTypeDescription = {
@@ -66,7 +67,7 @@ export class SignMessage implements INodeType {
 				const arr = Uint8Array.from(Array.from(message).map((letter) => letter.charCodeAt(0)));
 				const { signature, publicKey } = keyPair.sign(arr);
 
-				item.json.signature = utils.serialize.base_encode(signature);
+				item.json.signature = Base64.fromUint8Array(signature);
 				item.json.publicKey = publicKey.toString();
 			} catch (error) {
 				// This node should never fail but we want to showcase how
