@@ -44,7 +44,8 @@
       "dist/nodes/HttpBin/HttpBin.node.js",
       "dist/nodes/GenerateKeyPair/GenerateKeyPair.node.js",
       "dist/nodes/ViewContractCall/ViewContractCall.node.js",
-      "dist/nodes/WriteContractCall/WriteContractCall.node.js"
+      "dist/nodes/WriteContractCall/WriteContractCall.node.js",
+      "dist/nodes/AddKey/AddKey.node.js"
     ]
   },
   "devDependencies": {
