@@ -5,9 +5,7 @@ import type {
 	INodeTypeDescription,
 } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { KeyPair, connect } from 'near-api-js';
-import { InMemoryKeyStore } from 'near-api-js/lib/key_stores';
-import { KeyPairString } from 'near-api-js/lib/utils';
+import { connect, utils } from 'near-api-js';
 
 const Networks = {
 	testnet: {
@@ -24,15 +22,15 @@ const Networks = {
 	},
 };
 
-export class WriteContractCall implements INodeType {
+export class GetAccountBalance implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Write Contract Call',
-		name: 'writeContractCall',
+		displayName: 'Get Account Balance',
+		name: 'getAccountBalance',
 		group: ['transform'],
 		version: 1,
-		description: 'Sends a write contract request to NEAR Protocol',
+		description: 'Get Account Balance',
 		defaults: {
-			name: 'Write Contract Call',
+			name: 'Get Account Balance',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
@@ -47,39 +45,18 @@ export class WriteContractCall implements INodeType {
 				placeholder: 'mainnet',
 			},
 			{
-				displayName: 'Private Key',
-				name: 'privateKey',
-				type: 'string',
-				default: '',
-				placeholder: 'ed25519:deadbeef',
-			},
-			{
-				displayName: 'Signer Account ID',
+				displayName: 'Account ID',
 				name: 'accountId',
 				type: 'string',
 				default: '',
 				placeholder: 'example.near',
 			},
 			{
-				displayName: 'Contract Account ID',
-				name: 'contractId',
-				type: 'string',
-				default: '',
-				placeholder: 'example.near',
-			},
-			{
-				displayName: 'Method Name',
-				name: 'methodName',
-				type: 'string',
-				default: '',
-				placeholder: 'set_value_by_key',
-			},
-			{
-				displayName: 'Arguments JSON',
-				name: 'methodArgs',
-				type: 'string',
-				default: '{}',
-				placeholder: '{"key": "value"}',
+				displayName: 'Frac Digits',
+				name: 'fracDigits',
+				type: 'number',
+				default: 4,
+				placeholder: '4',
 			},
 		],
 	};
@@ -93,11 +70,8 @@ export class WriteContractCall implements INodeType {
 
 		let item: INodeExecutionData;
 		let networkId: string;
-		let privateKey: string;
 		let accountId: string;
-		let contractId: string;
-		let methodName: string;
-		let methodArgs: any;
+		let fracDigits: number | null;
 
 		// Iterates over all input items and add the key "networkId" with the
 		// value the parameter "networkId" resolves to.
@@ -105,32 +79,22 @@ export class WriteContractCall implements INodeType {
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 			try {
 				networkId = this.getNodeParameter('networkId', itemIndex, '') as string;
-				privateKey = this.getNodeParameter('privateKey', itemIndex, '') as string;
 				accountId = this.getNodeParameter('accountId', itemIndex, '') as string;
-				contractId = this.getNodeParameter('contractId', itemIndex, '') as string;
-				methodName = this.getNodeParameter('methodName', itemIndex, '') as string;
-				methodArgs = JSON.parse(
-					this.getNodeParameter('methodArgs', itemIndex, '') as string,
-				) as any;
+				fracDigits = this.getNodeParameter('fracDigits', itemIndex, 4) as number;
 
 				item = items[itemIndex];
 
-				const keyPair = KeyPair.fromString(privateKey as KeyPairString);
-				const keyStore = new InMemoryKeyStore();
-				await keyStore.setKey(networkId, accountId, keyPair);
-				const near = await connect({
-					...Networks[networkId as keyof typeof Networks],
-					keyStore,
-					deps: { keyStore },
-				});
+				const near = await connect(Networks[networkId as keyof typeof Networks]);
 				const account = await near.account(accountId);
-				const result = await account.functionCall({
-					contractId,
-					methodName,
-					args: methodArgs,
-				})
-				
-				item.json.result = result;
+				const balance = await account.getAccountBalance();
+
+				item.json.balance = balance;
+				item.json.formatted = {
+					available: utils.format.formatNearAmount(balance.available, fracDigits),
+					total: utils.format.formatNearAmount(balance.total, fracDigits),
+					staked: utils.format.formatNearAmount(balance.staked, fracDigits),
+					stateStaked: utils.format.formatNearAmount(balance.stateStaked, fracDigits),
+				};
 			} catch (error) {
 				// This node should never fail but we want to showcase how
 				// to handle errors.
