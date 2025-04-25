@@ -1,6 +1,6 @@
 {
   "name": "@dapplets/n8n-nodes-near-protocol",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "description": "NEAR Protocol community node package for n8n",
   "keywords": [
     "n8n-community-node-package"
@@ -47,7 +47,8 @@
       "dist/nodes/WriteContractCall/WriteContractCall.node.js",
       "dist/nodes/AddKey/AddKey.node.js",
       "dist/nodes/SignMessage/SignMessage.node.js",
-      "dist/nodes/GetAccountBalance/GetAccountBalance.node.js"
+      "dist/nodes/GetAccountBalance/GetAccountBalance.node.js",
+      "dist/nodes/Transfer/Transfer.node.js"
     ]
   },
   "devDependencies": {
