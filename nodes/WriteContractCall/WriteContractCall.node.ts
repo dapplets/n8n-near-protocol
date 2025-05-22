@@ -81,6 +81,13 @@ export class WriteContractCall implements INodeType {
 				default: '{}',
 				placeholder: '{"key": "value"}',
 			},
+			{
+				displayName: 'Attached Deposit (in yoctoNEAR)',
+				name: 'attachedDeposit',
+				type: 'string',
+				default: '0',
+				placeholder: '1000000000000000000000000',
+			},
 		],
 	};
 
@@ -98,6 +105,7 @@ export class WriteContractCall implements INodeType {
 		let contractId: string;
 		let methodName: string;
 		let methodArgs: any;
+		let attachedDeposit: string;
 
 		// Iterates over all input items and add the key "networkId" with the
 		// value the parameter "networkId" resolves to.
@@ -112,6 +120,7 @@ export class WriteContractCall implements INodeType {
 				methodArgs = JSON.parse(
 					this.getNodeParameter('methodArgs', itemIndex, '') as string,
 				) as any;
+				attachedDeposit = this.getNodeParameter('attachedDeposit', itemIndex, '') as string;
 
 				item = items[itemIndex];
 
@@ -128,8 +137,9 @@ export class WriteContractCall implements INodeType {
 					contractId,
 					methodName,
 					args: methodArgs,
-				})
-				
+					attachedDeposit: BigInt(attachedDeposit),
+				});
+
 				item.json.result = result;
 			} catch (error) {
 				// This node should never fail but we want to showcase how
